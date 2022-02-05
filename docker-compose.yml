@@ -1,0 +1,105 @@
+version: '3'
+services:
+  db:
+    restart: always
+    image: postgres:9.6-alpine
+    shm_size: 256mb
+    networks:
+      - internal_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "mastodon"]
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: mastodon
+      POSTGRES_DB: mastodon
+      POSTGRES_PASSWORD: mastodon
+
+  redis:
+    restart: always
+    image: redis:6-alpine
+    networks:
+      - internal_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    volumes:
+      - ./redis:/data
+
+  web:
+    image: plusminusio/mastodon:3.4.6-arm64
+    restart: always
+    env_file: .env.production
+    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
+    networks:
+      - external_network
+      - internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:3000/health || exit 1"]
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./public/system:/mastodon/public/system
+    environment:
+      POSTGRES_USER: mastodon
+      POSTGRES_DB: mastodon
+      POSTGRES_PASSWORD: mastodon
+
+  streaming:
+    image: plusminusio/mastodon:3.4.6-arm64
+    restart: always
+    env_file: .env.production
+    command: node ./streaming
+    networks:
+      - external_network
+      - internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1"]
+    depends_on:
+      - db
+      - redis
+
+  sidekiq:
+    image: plusminusio/mastodon:3.4.6-arm64
+    restart: always
+    env_file: .env.production
+    command: bundle exec sidekiq
+    depends_on:
+      - db
+      - redis
+    networks:
+      - external_network
+      - internal_network
+    volumes:
+      - ./public/system:/mastodon/public/system
+
+  cloudflared:
+    image: ghcr.io/milgradesec/cloudflared:latest
+    user: root
+    command: tunnel
+    environment:
+      - TUNNEL_HOSTNAME=mstdn.yude.jp
+      - TUNNEL_URL=http://nginx:85
+      - TUNNEL_ORIGIN_CERT=/root/.cloudflared/cert.pem
+    volumes:
+      - '$HOME/.cloudflared:/root/.cloudflared'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+    networks:
+      - external_network
+      - internal_network
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/mastodon.conf:/etc/nginx/conf.d/mastodon.conf
+    restart: always
+    networks:
+      - external_network
+      - internal_network
+
+networks:
+  external_network:
+  internal_network:
+    internal: true
