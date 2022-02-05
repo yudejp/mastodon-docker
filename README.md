@@ -1,2 +1,2 @@
 # mstdn.yude.jp
-🐬 mstdn.yude.jp
+🐘 Mastodon on yude.jp
