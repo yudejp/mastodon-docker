@@ -79,7 +79,7 @@ services:
     command: tunnel
     environment:
       - TUNNEL_HOSTNAME=mstdn.yude.jp
-      - TUNNEL_URL=http://nginx:85
+      - TUNNEL_URL=http://nginx:80
       - TUNNEL_ORIGIN_CERT=/root/.cloudflared/cert.pem
     volumes:
       - '$HOME/.cloudflared:/root/.cloudflared'
