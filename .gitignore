@@ -1,1 +1,4 @@
 .env.production
+postgres
+public
+redis
