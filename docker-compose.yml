@@ -22,7 +22,7 @@ services:
       - ./redis:/data
 
   web:
-    image: tootsuite/mastodon:v4.0
+    image: tootsuite/mastodon:v4.0.2
     container_name: mastodon_web
     restart: always
     env_file: .env.production
@@ -40,8 +40,7 @@ services:
       POSTGRES_PASSWORD: mastodon_
 
   streaming:
-    #image: plusminusio/mastodon:3.5.0-arm64
-    image: tootsuite/mastodon:v4.0 
+    image: tootsuite/mastodon:v4.0.2
     container_name: mastodon_streaming
     restart: always
     env_file: .env.production
@@ -53,7 +52,7 @@ services:
       - redis
 
   sidekiq:
-    image: tootsuite/mastodon:v4.0
+    image: tootsuite/mastodon:v4.0.2
     restart: always
     env_file: .env.production
     command: bundle exec sidekiq
