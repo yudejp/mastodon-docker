@@ -1,4 +1,4 @@
-# mstdn.yude.jp
+# mastodon-docker
 🐘 Mastodon on Docker Compose
 
 ## Setup
