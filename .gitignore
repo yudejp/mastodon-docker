@@ -2,3 +2,5 @@
 postgres
 public
 redis
+*.rdb
+*.dump
