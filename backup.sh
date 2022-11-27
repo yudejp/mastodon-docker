@@ -22,4 +22,7 @@ cp ./redis/dump.rdb $BASE_DIR/
 echo "[finalize] compress backup"
 tar --preserve-permissions --use-compress-program zstd -cf $OUTPUT_FILE_NAME $BASE_DIR
 
+echo "[finalize] delete temporary files"
+rm -rf /app/backup/*
+
 echo "Done! ^_^"
